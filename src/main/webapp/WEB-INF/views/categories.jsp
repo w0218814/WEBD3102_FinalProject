@@ -9,17 +9,15 @@
     <script>
         $(document).ready(function() {
             $('#addCategoryForm').submit(function(e) {
-                e.preventDefault(); // Prevent the form from submitting via the browser.
-                var formData = $(this).serialize(); // Serialize the form data.
+                e.preventDefault();
+                var formData = $(this).serialize();
                 $.ajax({
                     type: 'POST',
-                    url: "${pageContext.request.contextPath}/addCategory", // Your endpoint here.
+                    url: "${pageContext.request.contextPath}/categories", // Correct endpoint.
                     data: formData,
                     success: function(response) {
-                        // Assuming the response contains the added category.
-                        // Update the UI to reflect the addition.
-                        $('ul#categoryList').append('<li>' + response.name + '</li>'); // Adjust according to your response structure.
-                        $('#name').val(''); // Clear the input field after successful submission.
+                        $('#categoryList').append('<li>' + response.name + '</li>'); // Update based on your response structure.
+                        $('#name').val('');
                     },
                     error: function() {
                         alert('Error adding category.');
@@ -31,7 +29,7 @@
 </head>
 <body>
 <h1>Categories</h1>
-<form id="addCategoryForm" action="${pageContext.request.contextPath}/categories" method="post">
+<form id="addCategoryForm">
     <label for="name">Category Name:</label>
     <input type="text" id="name" name="name" placeholder="Category Name" required>
     <button type="submit">Add Category</button>

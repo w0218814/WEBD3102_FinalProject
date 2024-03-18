@@ -9,7 +9,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -33,13 +32,11 @@ public class CategoryServlet extends HttpServlet {
             em.getTransaction().commit();
 
             if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
-                // For AJAX requests, return the created category as JSON
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 new Gson().toJson(category, response.getWriter());
             } else {
-                // For regular requests, redirect to the category listing page
-                response.sendRedirect(request.getContextPath() + "/categories");
+                response.sendRedirect(request.getContextPath() + "/categories.jsp");
             }
         } catch (Exception e) {
             if (em != null && em.getTransaction().isActive()) {
@@ -61,12 +58,10 @@ public class CategoryServlet extends HttpServlet {
             List<Category> categories = em.createQuery("SELECT c FROM Category c", Category.class).getResultList();
 
             if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
-                // For AJAX requests, return the list of categories as JSON
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 new Gson().toJson(categories, response.getWriter());
             } else {
-                // For regular requests, forward to the JSP page
                 request.setAttribute("categories", categories);
                 request.getRequestDispatcher("/WEB-INF/views/categories.jsp").forward(request, response);
             }

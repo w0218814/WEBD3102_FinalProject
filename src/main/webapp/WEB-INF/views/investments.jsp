@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
 <%@ page import="com.personalfinanceapp.model.personalfinanceapp.Investment" %>
 <!DOCTYPE html>
 <html>
@@ -9,66 +10,55 @@
     <script>
         $(document).ready(function() {
             $('#addInvestmentForm').submit(function(e) {
-                e.preventDefault(); // Prevent the default form submission.
-                var formData = $(this).serialize(); // Serialize the form data for AJAX submission.
+                e.preventDefault(); // Prevents the default form submission behavior
+                var formData = $(this).serialize(); // Serializes form data for submission
 
                 $.ajax({
                     type: 'POST',
-                    url: "${pageContext.request.contextPath}/addInvestment", // Endpoint for adding an investment.
+                    url: "${pageContext.request.contextPath}/investments",
                     data: formData,
                     success: function(response) {
-                        // Assuming 'response' contains the added investment details.
-                        // Update the investment list. Adjust based on your actual response structure.
-                        $('#investmentList').append('<li>' + response.amount + ' - ' + response.type + '</li>');
-                        // Clear form fields after submission.
-                        $('#addInvestmentForm').find('input[type=number], input[type=text]').val('');
+                        // Assume response includes 'amount', 'type', and 'date' (formatted)
+                        $('#investmentList').append('<li>' + response.amount + ' - ' + response.type + ' - ' + response.date + '</li>');
+                        // Resets form inputs after successful submission
+                        $('#addInvestmentForm').find('input[type=number], input[type=text], input[type=date]').val('');
                     },
                     error: function() {
+                        // Alerts if an error occurs
                         alert('Error adding investment.');
                     }
                 });
             });
-
-            // Function to load investments dynamically (optional, based on your app design)
-            function loadInvestments() {
-                $.ajax({
-                    type: 'GET',
-                    url: "${pageContext.request.contextPath}/fetchInvestments", // Endpoint to fetch investments.
-                    success: function(response) {
-                        // Clear existing investments before loading new ones to avoid duplication.
-                        $('#investmentList').empty();
-                        $.each(response, function(index, investment) {
-                            // Append each investment to the list. Adjust according to your response structure.
-                            $('#investmentList').append('<li>' + investment.amount + ' - ' + investment.type + '</li>');
-                        });
-                    },
-                    error: function() {
-                        alert('Error loading investments.');
-                    }
-                });
-            }
-
-            // Optionally call loadInvestments on page load if you're implementing dynamic loading.
-            // loadInvestments();
         });
     </script>
 </head>
 <body>
-<h1>Investments</h1>
-<form id="addInvestmentForm" action="${pageContext.request.contextPath}/investments" method="post">
-    <label for="amount">Amount:</label>
-    <input type="number" id="amount" name="amount" placeholder="Amount" required>
-    <label for="type">Type:</label>
-    <input type="text" id="type" name="type" placeholder="Type" required>
-    <button type="submit">Add Investment</button>
-</form>
-<ul id="investmentList">
-    <%
-        List<Investment> investments = (List<Investment>) request.getAttribute("investments");
-        for (Investment investment : investments) {
-    %>
-    <li><%= investment.getAmount() %> - <%= investment.getType() %></li>
-    <% } %>
-</ul>
+<div class="container">
+    <h1>Investments</h1>
+    <form id="addInvestmentForm">
+        <div class="form-group">
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" name="amount" placeholder="Amount" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="type">Type:</label>
+            <input type="text" id="type" name="type" placeholder="Type" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="investmentDate">Date:</label>
+            <input type="date" id="investmentDate" name="investmentDate" required class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Investment</button>
+    </form>
+    <ul id="investmentList">
+        <%
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            List<Investment> investments = (List<Investment>) request.getAttribute("investments");
+            for (Investment investment : investments) {
+        %>
+        <li><%= investment.getAmount() %> - <%= investment.getType() %> - <%= investment.getInvestmentDate().format(formatter) %></li>
+        <% } %>
+    </ul>
+</div>
 </body>
 </html>

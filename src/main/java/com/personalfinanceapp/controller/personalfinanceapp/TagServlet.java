@@ -8,7 +8,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
-import org.json.JSONObject; // Assuming you have a JSON library like org.json
+import org.json.JSONObject;
 
 @WebServlet("/tags")
 public class TagServlet extends HttpServlet {
@@ -28,7 +28,6 @@ public class TagServlet extends HttpServlet {
             }
 
             em.getTransaction().begin();
-            // Use a single query to check if the tag exists and create if not
             Long existingTagCount = em.createQuery("SELECT COUNT(t) FROM Tag t WHERE t.name = :name", Long.class)
                     .setParameter("name", tagName)
                     .getSingleResult();
@@ -36,7 +35,7 @@ public class TagServlet extends HttpServlet {
             if (existingTagCount > 0) {
                 jsonResponse.put("error", "Tag already exists.");
                 response.getWriter().write(jsonResponse.toString());
-                em.getTransaction().rollback(); // Explicit rollback not strictly necessary here but included for clarity
+                em.getTransaction().rollback();
                 return;
             }
 
@@ -47,6 +46,7 @@ public class TagServlet extends HttpServlet {
 
             jsonResponse.put("message", "Tag added successfully");
             jsonResponse.put("id", tag.getId());
+            jsonResponse.put("name", tag.getName());
             response.getWriter().write(jsonResponse.toString());
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -61,7 +61,6 @@ public class TagServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-
         try {
             List<Tag> tags = em.createQuery("SELECT t FROM Tag t", Tag.class).getResultList();
             request.setAttribute("tags", tags);

@@ -5,13 +5,15 @@ import com.personalfinanceapp.util.personalfinanceapp.JPAUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import org.json.JSONObject; // Ensure you have this library or similar for JSON handling
+import org.json.JSONObject;
 
 @WebServlet("/investments")
 public class InvestmentServlet extends HttpServlet {
@@ -28,21 +30,19 @@ public class InvestmentServlet extends HttpServlet {
 
             String amountParam = request.getParameter("amount");
             String typeParam = request.getParameter("type");
-            String dateParam = request.getParameter("investmentDate"); // Parameter for investment date
+            LocalDate investmentDate = LocalDate.parse(request.getParameter("investmentDate"), DateTimeFormatter.ISO_LOCAL_DATE);
 
-            if (isInvalidInput(amountParam, typeParam, dateParam)) { // Check if any parameter is invalid
+            if (isInvalidInput(amountParam, typeParam, request.getParameter("investmentDate"))) {
                 jsonResponse.put("error", "Invalid input parameters");
                 response.getWriter().write(jsonResponse.toString());
                 return;
             }
 
             BigDecimal amount = new BigDecimal(amountParam);
-            Date investmentDate = new SimpleDateFormat("yyyy-MM-dd").parse(dateParam); // Parse the investment date
-
             Investment investment = new Investment();
             investment.setAmount(amount);
             investment.setType(typeParam);
-            investment.setInvestmentDate(investmentDate); // Set the parsed date
+            investment.setInvestmentDate(investmentDate);
 
             em.persist(investment);
             em.getTransaction().commit();
@@ -50,11 +50,12 @@ public class InvestmentServlet extends HttpServlet {
             jsonResponse.put("message", "Investment added successfully");
             jsonResponse.put("id", investment.getId());
             response.getWriter().write(jsonResponse.toString());
-        } catch (Exception e) { // Catch-all for parsing, database, etc. errors
+        } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            jsonResponse.put("error", "An error occurred processing your request");
+            e.printStackTrace(); // Enhanced error logging
+            jsonResponse.put("error", "An error occurred processing your request: " + e.getMessage());
             response.getWriter().write(jsonResponse.toString());
         } finally {
             em.close();
@@ -70,23 +71,16 @@ public class InvestmentServlet extends HttpServlet {
             request.setAttribute("investments", investments);
             request.getRequestDispatcher("/WEB-INF/views/investments.jsp").forward(request, response);
         } catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unable to retrieve investments");
+            e.printStackTrace(); // Enhanced error logging
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unable to retrieve investments: " + e.getMessage());
         } finally {
             em.close();
         }
     }
 
     private boolean isInvalidInput(String amountParam, String typeParam, String dateParam) {
-        // Updated to check for invalid date parameter as well
-        return amountParam == null || amountParam.isEmpty() ||
-                typeParam == null || typeParam.isEmpty() ||
-                dateParam == null || dateParam.isEmpty();
-    }
-
-    private void handleException(EntityManager em, JSONObject jsonResponse, String errorMessage) {
-        if (em.getTransaction().isActive()) {
-            em.getTransaction().rollback();
-        }
-        jsonResponse.put("error", errorMessage);
+        return amountParam == null || amountParam.trim().isEmpty() ||
+                typeParam == null || typeParam.trim().isEmpty() ||
+                dateParam == null || dateParam.trim().isEmpty();
     }
 }

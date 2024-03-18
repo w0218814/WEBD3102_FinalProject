@@ -5,23 +5,23 @@
 <html>
 <head>
     <title>Tags</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#addTagForm').submit(function(e) {
-                e.preventDefault(); // Prevent the default form submission.
-                var formData = $(this).serialize(); // Serialize the form data for AJAX submission.
+                e.preventDefault();
+                var formData = $(this).serialize();
 
                 $.ajax({
                     type: 'POST',
-                    url: "${pageContext.request.contextPath}/addTag", // Endpoint for adding a tag.
+                    url: "${pageContext.request.contextPath}/tags", // Adjust if necessary.
                     data: formData,
                     success: function(response) {
-                        // Assuming 'response' contains the added tag details.
-                        // Update the tag list. Adjust based on your actual response structure.
-                        $('#tagList').append('<li>' + response.name + '</li>');
-                        // Clear the input field after successful submission.
-                        $('#name').val('');
+                        // Assuming 'response' is a JSON object that contains the tag name.
+                        var tagName = response.name; // Adjust based on actual response structure.
+                        $('#tagList').append('<li>' + tagName + '</li>');
+                        $('#name').val(''); // Clear input field after successful addition.
                     },
                     error: function() {
                         alert('Error adding tag.');
@@ -32,19 +32,25 @@
     </script>
 </head>
 <body>
-<h1>Tags</h1>
-<form id="addTagForm" action="${pageContext.request.contextPath}/tags" method="post">
-    <label for="name">Tag Name:</label>
-    <input type="text" id="name" name="name" placeholder="Tag Name" required>
-    <button type="submit">Add Tag</button>
-</form>
-<ul id="tagList">
-    <%
-        List<Tag> tags = (List<Tag>) request.getAttribute("tags");
-        for (Tag tag : tags) {
-    %>
-    <li><%= tag.getName() %></li>
-    <% } %>
-</ul>
+<div class="container mt-3">
+    <h1>Tags</h1>
+    <form id="addTagForm">
+        <div class="form-group">
+            <label for="name">Tag Name:</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Enter tag name" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Tag</button>
+    </form>
+    <ul id="tagList">
+        <% List<Tag> tags = (List<Tag>) request.getAttribute("tags");
+            if (tags != null) {
+                for (Tag tag : tags) {
+        %>
+        <li><%= tag.getName() %></li>
+        <%      }
+        } %>
+    </ul>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

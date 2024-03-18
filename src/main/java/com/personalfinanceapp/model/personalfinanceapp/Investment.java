@@ -2,7 +2,7 @@ package com.personalfinanceapp.model.personalfinanceapp;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate; // Ensure java.time.LocalDate is imported
 
 @Entity
 public class Investment {
@@ -13,15 +13,12 @@ public class Investment {
     private BigDecimal amount;
     private String type; // e.g., "stocks", "bonds"
 
-    @Temporal(TemporalType.DATE)
-    private Date investmentDate;
+    // Changed the type from Date to LocalDate
+    private LocalDate investmentDate;
 
-    // Constructors
+    // Default constructor
     public Investment() {
-        // Default constructor
     }
-
-    // Implement other constructors if needed
 
     // Getters and setters
     public Long getId() {
@@ -48,11 +45,12 @@ public class Investment {
         this.type = type;
     }
 
-    public Date getInvestmentDate() {
+    // Update getter and setter to use LocalDate
+    public LocalDate getInvestmentDate() {
         return investmentDate;
     }
 
-    public void setInvestmentDate(Date investmentDate) {
+    public void setInvestmentDate(LocalDate investmentDate) {
         this.investmentDate = investmentDate;
     }
 

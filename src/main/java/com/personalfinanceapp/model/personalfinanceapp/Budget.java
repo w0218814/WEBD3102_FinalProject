@@ -10,18 +10,20 @@ public class Budget {
     private Long id;
 
     private BigDecimal amount;
-    private String period; // e.g., "monthly"
+    private String period;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
-    private Category category; // Now a reference to Category entity
+    private Category category;
 
-    // Constructors
-    public Budget() {
-        // Default constructor
-    }
+    // Transient field for serialization
+    @Transient
+    private String categoryName;
 
-    // Getters and setters
+    // Default constructor
+    public Budget() {}
+
+    // Getters and setters for all fields including category
     public Long getId() {
         return id;
     }
@@ -52,5 +54,16 @@ public class Budget {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public String getCategoryName() {
+        if (categoryName == null || categoryName.isEmpty()) {
+            categoryName = category != null ? category.getName() : null;
+        }
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }
