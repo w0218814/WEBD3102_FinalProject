@@ -11,14 +11,15 @@ public class Budget {
 
     private BigDecimal amount;
     private String period; // e.g., "monthly"
-    private String category;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category; // Now a reference to Category entity
 
     // Constructors
     public Budget() {
         // Default constructor
     }
-
-    // Implement other constructors if needed
 
     // Getters and setters
     public Long getId() {
@@ -45,13 +46,11 @@ public class Budget {
         this.period = period;
     }
 
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
-
-    // Other methods (e.g., toString, equals, hashCode) can be added as needed
 }

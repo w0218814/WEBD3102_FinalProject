@@ -8,28 +8,36 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
+import org.json.JSONObject; // Assuming you have a JSON library like org.json
 
 @WebServlet("/tags")
 public class TagServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        JSONObject jsonResponse = new JSONObject();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
 
         try {
-            String tagName = request.getParameter("name");
-            if (tagName == null || tagName.trim().isEmpty()) {
-                throw new IllegalArgumentException("Tag name cannot be null or empty.");
+            String tagName = request.getParameter("name").trim();
+            if (tagName.isEmpty()) {
+                jsonResponse.put("error", "Tag name cannot be null or empty.");
+                response.getWriter().write(jsonResponse.toString());
+                return;
             }
 
             em.getTransaction().begin();
-            List<Tag> existingTags = em.createQuery("SELECT t FROM Tag t WHERE t.name = :name", Tag.class)
+            // Use a single query to check if the tag exists and create if not
+            Long existingTagCount = em.createQuery("SELECT COUNT(t) FROM Tag t WHERE t.name = :name", Long.class)
                     .setParameter("name", tagName)
-                    .getResultList();
+                    .getSingleResult();
 
-            if (!existingTags.isEmpty()) {
-                throw new IllegalArgumentException("Tag already exists.");
+            if (existingTagCount > 0) {
+                jsonResponse.put("error", "Tag already exists.");
+                response.getWriter().write(jsonResponse.toString());
+                em.getTransaction().rollback(); // Explicit rollback not strictly necessary here but included for clarity
+                return;
             }
 
             Tag tag = new Tag();
@@ -37,16 +45,15 @@ public class TagServlet extends HttpServlet {
             em.persist(tag);
             em.getTransaction().commit();
 
-            response.getWriter().write("{\"message\": \"Tag added successfully\"}");
-        } catch (IllegalArgumentException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
+            jsonResponse.put("message", "Tag added successfully");
+            jsonResponse.put("id", tag.getId());
+            response.getWriter().write(jsonResponse.toString());
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"error\": \"Error processing request\"}");
+            jsonResponse.put("error", "Error processing request: " + e.getMessage());
+            response.getWriter().write(jsonResponse.toString());
         } finally {
             em.close();
         }
@@ -54,6 +61,7 @@ public class TagServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+
         try {
             List<Tag> tags = em.createQuery("SELECT t FROM Tag t", Tag.class).getResultList();
             request.setAttribute("tags", tags);
