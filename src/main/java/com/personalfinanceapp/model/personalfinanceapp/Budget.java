@@ -1,42 +1,38 @@
 package com.personalfinanceapp.model.personalfinanceapp;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 
 @Entity
+@Table(name = "Budget")
 public class Budget {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    private BigDecimal amount;
+    @Column(name = "amount", nullable = false)
+    private Double amount;
+
+    @Column(name = "period", nullable = false)
     private String period;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id", referencedColumnName = "id", nullable = false)
     private Category category;
 
-    // Transient field for serialization
-    @Transient
-    private String categoryName;
-
-    // Default constructor
-    public Budget() {}
-
-    // Getters and setters for all fields including category
-    public Long getId() {
+    // Getters and setters
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public BigDecimal getAmount() {
+    public Double getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
+    public void setAmount(Double amount) {
         this.amount = amount;
     }
 
@@ -51,19 +47,7 @@ public class Budget {
     public Category getCategory() {
         return category;
     }
-
     public void setCategory(Category category) {
         this.category = category;
-    }
-
-    public String getCategoryName() {
-        if (categoryName == null || categoryName.isEmpty()) {
-            categoryName = category != null ? category.getName() : null;
-        }
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
     }
 }
