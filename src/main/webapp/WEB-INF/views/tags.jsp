@@ -19,7 +19,8 @@
                     url: "${pageContext.request.contextPath}/tags",
                     data: formData,
                     success: function(response) {
-                        $('#tagList').append('<a href="#" class="list-group-item list-group-item-action">' + response.name + '</a>'); // Update this line to match the expected response structure.
+                        // Updated to append as a div instead of an <a> tag.
+                        $('#tagList').append('<div class="list-group-item list-group-item-action">' + response.name + '</div>');
                         $('#name').val(''); // Clear input field after successful addition.
                     },
                     error: function() {
@@ -49,7 +50,8 @@
         <% List<Tag> tags = (List<Tag>) request.getAttribute("tags");
             if (tags != null) {
                 for (Tag tag : tags) { %>
-        <a href="#" class="list-group-item list-group-item-action"><%= tag.getName() %></a>
+        <!-- Updated to use div instead of an <a> tag -->
+        <div class="list-group-item list-group-item-action"><%= tag.getName() %></div>
         <%      }
         } %>
     </div>

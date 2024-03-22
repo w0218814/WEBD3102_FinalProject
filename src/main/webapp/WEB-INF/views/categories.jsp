@@ -18,7 +18,8 @@
                     url: "${pageContext.request.contextPath}/categories", // Correct endpoint.
                     data: formData,
                     success: function(response) {
-                        $('#categoryList').append('<a href="#" class="list-group-item list-group-item-action">' + response.name + '</a>'); // Update based on your response structure, wrapped in list-group-item for styling.
+                        // Updated to append as a div instead of an <a> tag.
+                        $('#categoryList').append('<div class="list-group-item list-group-item-action">' + response.name + '</div>'); // Update based on your response structure, wrapped in list-group-item for styling.
                         $('#name').val('');
                     },
                     error: function() {
@@ -45,11 +46,10 @@
         </div>
     </div>
     <div class="list-group" id="categoryList">
-        <%
-            List<Category> categories = (List<Category>) request.getAttribute("categories");
-            for (Category category : categories) {
-        %>
-        <a href="#" class="list-group-item list-group-item-action"><%= category.getName() %></a>
+        <% List<Category> categories = (List<Category>) request.getAttribute("categories");
+            for (Category category : categories) { %>
+        <!-- Updated to use div instead of an <a> tag -->
+        <div class="list-group-item list-group-item-action"><%= category.getName() %></div>
         <% } %>
     </div>
 </div>

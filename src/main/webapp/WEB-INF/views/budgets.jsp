@@ -36,13 +36,13 @@
     <div class="list-group">
         <% List<Budget> budgets = (List<Budget>) request.getAttribute("budgets");
             for (Budget budget : budgets) { %>
-        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+        <div class="list-group-item list-group-item-action flex-column align-items-start">
             <div class="d-flex w-100 justify-content-between">
                 <h5 class="mb-1">$<%= budget.getAmount() %></h5>
                 <small><%= budget.getCategory().getName() %></small> <!-- Updated to display category name -->
             </div>
             <p class="mb-1">For <%= budget.getPeriod() %></p>
-        </a>
+        </div>
         <% } %>
     </div>
 </div>
