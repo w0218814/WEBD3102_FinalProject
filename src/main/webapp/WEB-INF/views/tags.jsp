@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.util.List" %>
 <%@ page import="com.personalfinanceapp.model.personalfinanceapp.Tag" %>
+<%@ include file="header.jsp" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -15,12 +16,10 @@
 
                 $.ajax({
                     type: 'POST',
-                    url: "${pageContext.request.contextPath}/tags", // Adjust if necessary.
+                    url: "${pageContext.request.contextPath}/tags",
                     data: formData,
                     success: function(response) {
-                        // Assuming 'response' is a JSON object that contains the tag name.
-                        var tagName = response.name; // Adjust based on actual response structure.
-                        $('#tagList').append('<li>' + tagName + '</li>');
+                        $('#tagList').append('<a href="#" class="list-group-item list-group-item-action">' + response.name + '</a>'); // Update this line to match the expected response structure.
                         $('#name').val(''); // Clear input field after successful addition.
                     },
                     error: function() {
@@ -32,24 +31,28 @@
     </script>
 </head>
 <body>
-<div class="container mt-3">
-    <h1>Tags</h1>
-    <form id="addTagForm">
-        <div class="form-group">
-            <label for="name">Tag Name:</label>
-            <input type="text" class="form-control" id="name" name="name" placeholder="Enter tag name" required>
+<div class="container mt-5">
+    <h1 class="mb-4 text-center font-weight-bold text-primary">Tags</h1>
+    <div class="card bg-light mb-3">
+        <div class="card-body">
+            <h4 class="card-title text-secondary text-center">Add a New Tag</h4>
+            <form id="addTagForm">
+                <div class="form-group">
+                    <label for="name">Tag Name:</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter tag name" required>
+                </div>
+                <button type="submit" class="btn btn-success btn-block">Add Tag</button>
+            </form>
         </div>
-        <button type="submit" class="btn btn-primary">Add Tag</button>
-    </form>
-    <ul id="tagList">
+    </div>
+    <div class="list-group" id="tagList">
         <% List<Tag> tags = (List<Tag>) request.getAttribute("tags");
             if (tags != null) {
-                for (Tag tag : tags) {
-        %>
-        <li><%= tag.getName() %></li>
+                for (Tag tag : tags) { %>
+        <a href="#" class="list-group-item list-group-item-action"><%= tag.getName() %></a>
         <%      }
         } %>
-    </ul>
+    </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
