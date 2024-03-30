@@ -2,18 +2,19 @@ package com.personalfinanceapp.model.personalfinanceapp;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDate; // Ensure java.time.LocalDate is imported
+import java.time.LocalDate;
 
 @Entity
 public class Investment {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO) // Changed to AUTO for SQLite
     private Long id;
 
     private BigDecimal amount;
-    private String type; // e.g., "stocks", "bonds"
+    private String type;
 
-    // Changed the type from Date to LocalDate
+    // SQLite doesn't have a native date type, so dates are often stored as text in ISO format.
+    @Column(name = "investmentDate", columnDefinition = "TEXT")
     private LocalDate investmentDate;
 
     // Default constructor
@@ -45,7 +46,6 @@ public class Investment {
         this.type = type;
     }
 
-    // Update getter and setter to use LocalDate
     public LocalDate getInvestmentDate() {
         return investmentDate;
     }

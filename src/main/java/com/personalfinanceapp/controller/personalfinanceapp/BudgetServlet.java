@@ -19,7 +19,6 @@ public class BudgetServlet extends HttpServlet {
         try {
             List<Budget> budgets = em.createQuery("SELECT b FROM Budget b JOIN FETCH b.category", Budget.class).getResultList();
             request.setAttribute("budgets", budgets);
-            // Corrected the forward path to match the JSP file's location within WEB-INF/views
             request.getRequestDispatcher("/WEB-INF/views/budgets.jsp").forward(request, response);
         } finally {
             if (em != null) {
@@ -30,28 +29,28 @@ public class BudgetServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
-        try {
-            em.getTransaction().begin();
-            Double amount = Double.parseDouble(request.getParameter("amount"));
-            String period = request.getParameter("period");
-            Integer categoryId = Integer.parseInt(request.getParameter("category_id"));
-            Category category = em.find(Category.class, categoryId);
+        String action = request.getParameter("action");
 
-            Budget budget = new Budget();
-            budget.setAmount(amount);
-            budget.setPeriod(period);
-            budget.setCategory(category);
-
-            em.persist(budget);
-            em.getTransaction().commit();
-            response.sendRedirect("budgets"); // This redirects to the servlet URL pattern, causing doGet to be called.
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            e.printStackTrace();
-        } finally {
-            em.close();
+        if ("delete".equals(action)) {
+            deleteBudget(request, em);
+        } else {
+            // Add or update budget
+            saveOrUpdateBudget(request, em);
         }
+        response.sendRedirect("budgets");
+    }
+
+    private void deleteBudget(HttpServletRequest request, EntityManager em) {
+        int budgetId = Integer.parseInt(request.getParameter("id"));
+        Budget budget = em.find(Budget.class, budgetId);
+        em.getTransaction().begin();
+        em.remove(budget);
+        em.getTransaction().commit();
+    }
+
+    private void saveOrUpdateBudget(HttpServletRequest request, EntityManager em) {
+        em.getTransaction().begin();
+        // Implementation of saving or updating a budget
+        em.getTransaction().commit();
     }
 }

@@ -17,23 +17,17 @@
                 var formattedData = {};
 
                 formData.forEach(function(item) {
-                    if(item.name === 'transactionDate') {
-                        console.log("Original date:", item.value); // Log the original date
-                        var dateParts = item.value.split('/');
-                        if (dateParts.length === 3) {
-                            item.value = dateParts[2] + '-' + dateParts[1] + '-' + dateParts[0];
-                            console.log("Formatted date:", item.value); // Log the formatted date
-                        }
-                    }
                     formattedData[item.name] = item.value;
                 });
 
-                console.log("Data to be sent:", formattedData); // Log all the data to be sent
+                var tags = $('select[name="tags"]').val() || [];
+                formattedData['tags'] = tags;
 
                 $.ajax({
                     type: "POST",
                     url: "${pageContext.request.contextPath}/transactions",
                     data: formattedData,
+                    traditional: true,
                     success: function(response) {
                         location.reload();
                     },
@@ -86,8 +80,7 @@
                 </div>
                 <div class="form-group">
                     <label for="transactionDate">Date</label>
-                    <input type="date" class="form-control" id="transactionDate" name="transactionDate"
-                           value="<%= LocalDate.now().toString() %>" required>
+                    <input type="date" class="form-control" id="transactionDate" name="transactionDate" required>
                 </div>
                 <div class="form-group">
                     <label for="category">Category</label>
@@ -95,6 +88,15 @@
                         <% List<Category> categories = (List<Category>) request.getAttribute("categories");
                             for (Category category : categories) { %>
                         <option value="<%= category.getId() %>"><%= category.getName() %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+                    <select multiple class="form-control" id="tags" name="tags">
+                        <% List<Tag> tags = (List<Tag>) request.getAttribute("tags");
+                            for (Tag tag : tags) { %>
+                        <option value="<%= tag.getId() %>"><%= tag.getName() %></option>
                         <% } %>
                     </select>
                 </div>

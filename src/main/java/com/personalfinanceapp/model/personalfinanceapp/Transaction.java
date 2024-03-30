@@ -2,9 +2,7 @@ package com.personalfinanceapp.model.personalfinanceapp;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.Set;
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "TransactionsTable")
@@ -18,7 +16,7 @@ public class Transaction {
     private String type; // "income" or "expense"
 
     @Column(length = 255)
-    private String description;  // Added description field
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -32,8 +30,7 @@ public class Transaction {
     )
     private Set<Tag> tags;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date transactionDate;
+    private String transactionDate; // Changed from Date to String, ISO 8601 format (yyyy-MM-dd)
 
     // Constructors
     public Transaction() {
@@ -65,11 +62,11 @@ public class Transaction {
         this.type = type;
     }
 
-    public String getDescription() {  // Getter for description
+    public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {  // Setter for description
+    public void setDescription(String description) {
         this.description = description;
     }
 
@@ -89,13 +86,11 @@ public class Transaction {
         this.tags = tags;
     }
 
-    public Date getTransactionDate() {
+    public String getTransactionDate() {
         return transactionDate;
     }
 
-    public void setTransactionDate(Date transactionDate) {
+    public void setTransactionDate(String transactionDate) {
         this.transactionDate = transactionDate;
     }
-
-    // Other methods (e.g., toString, equals, hashCode) can be added as needed
 }

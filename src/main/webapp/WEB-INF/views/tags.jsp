@@ -1,61 +1,34 @@
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="com.personalfinanceapp.model.personalfinanceapp.Tag" %>
-<%@ include file="header.jsp" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html>
 <head>
     <title>Tags</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#addTagForm').submit(function(e) {
-                e.preventDefault();
-                var formData = $(this).serialize();
-
-                $.ajax({
-                    type: 'POST',
-                    url: "${pageContext.request.contextPath}/tags",
-                    data: formData,
-                    success: function(response) {
-                        // Updated to append as a div instead of an <a> tag.
-                        $('#tagList').append('<div class="list-group-item list-group-item-action">' + response.name + '</div>');
-                        $('#name').val(''); // Clear input field after successful addition.
-                    },
-                    error: function() {
-                        alert('Error adding tag.');
-                    }
-                });
-            });
-        });
-    </script>
+    <!-- Include CSS and JS files -->
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="mb-4 text-center font-weight-bold text-primary">Tags</h1>
-    <div class="card bg-light mb-3">
-        <div class="card-body">
-            <h4 class="card-title text-secondary text-center">Add a New Tag</h4>
-            <form id="addTagForm">
-                <div class="form-group">
-                    <label for="name">Tag Name:</label>
-                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter tag name" required>
-                </div>
-                <button type="submit" class="btn btn-success btn-block">Add Tag</button>
+<div class="container">
+    <h1>Tags</h1>
+    <form action="tags" method="post">
+        <input type="text" name="name" required placeholder="Enter tag name"/>
+        <button type="submit">Add Tag</button>
+    </form>
+
+    <div class="tags-list">
+        <% List<Tag> tags = (List<Tag>) request.getAttribute("tags");
+            for (Tag tag : tags) { %>
+        <div class="tag-item">
+            <%= tag.getName() %>
+            <form action="tags" method="post" style="display: inline;">
+                <input type="hidden" name="action" value="delete"/>
+                <input type="hidden" name="id" value="<%= tag.getId() %>"/>
+                <button type="submit">Delete</button>
             </form>
         </div>
-    </div>
-    <div class="list-group" id="tagList">
-        <% List<Tag> tags = (List<Tag>) request.getAttribute("tags");
-            if (tags != null) {
-                for (Tag tag : tags) { %>
-        <!-- Updated to use div instead of an <a> tag -->
-        <div class="list-group-item list-group-item-action"><%= tag.getName() %></div>
-        <%      }
-        } %>
+        <% } %>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

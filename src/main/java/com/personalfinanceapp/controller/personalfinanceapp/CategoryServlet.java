@@ -1,6 +1,5 @@
 package com.personalfinanceapp.controller.personalfinanceapp;
 
-import com.google.gson.Gson;
 import com.personalfinanceapp.model.personalfinanceapp.Category;
 import com.personalfinanceapp.util.personalfinanceapp.JPAUtil;
 import jakarta.persistence.EntityManager;
@@ -16,10 +15,45 @@ import java.util.List;
 public class CategoryServlet extends HttpServlet {
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        EntityManager em = null;
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-            em = JPAUtil.getEntityManagerFactory().createEntityManager();
+            if ("delete".equals(request.getParameter("action"))) {
+                int categoryId = Integer.parseInt(request.getParameter("id"));
+                em.getTransaction().begin();
+                Category category = em.find(Category.class, categoryId);
+
+                Long transactionCount = em.createQuery(
+                                "SELECT COUNT(t.id) FROM TransactionsTable t WHERE t.category.id = :categoryId", Long.class)
+                        .setParameter("categoryId", categoryId)
+                        .getSingleResult();
+
+                if (transactionCount > 0) {
+                    request.setAttribute("errorMessage", "Category is in use and cannot be deleted.");
+                } else if (category != null) {
+                    em.remove(category);
+                    em.getTransaction().commit();
+                } else {
+                    request.setAttribute("errorMessage", "Category not found.");
+                }
+                response.sendRedirect("categories");
+                return;
+            }
+
+            List<Category> categories = em.createQuery("SELECT c FROM Category c", Category.class).getResultList();
+            request.setAttribute("categories", categories);
+            request.getRequestDispatcher("/WEB-INF/views/categories.jsp").forward(request, response);
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
             em.getTransaction().begin();
             String categoryName = request.getParameter("name");
             if (categoryName == null || categoryName.trim().isEmpty()) {
@@ -31,42 +65,12 @@ public class CategoryServlet extends HttpServlet {
             em.persist(category);
             em.getTransaction().commit();
 
-            if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                new Gson().toJson(category, response.getWriter());
-            } else {
-                response.sendRedirect(request.getContextPath() + "/categories.jsp");
-            }
+            response.sendRedirect("categories"); // Redirect to refresh the page
         } catch (Exception e) {
             if (em != null && em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
             throw new ServletException("Error processing request", e);
-        } finally {
-            if (em != null) {
-                em.close();
-            }
-        }
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        EntityManager em = null;
-        try {
-            em = JPAUtil.getEntityManagerFactory().createEntityManager();
-            List<Category> categories = em.createQuery("SELECT c FROM Category c", Category.class).getResultList();
-
-            if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                new Gson().toJson(categories, response.getWriter());
-            } else {
-                request.setAttribute("categories", categories);
-                request.getRequestDispatcher("/WEB-INF/views/categories.jsp").forward(request, response);
-            }
-        } catch (Exception e) {
-            throw new ServletException("Error retrieving categories", e);
         } finally {
             if (em != null) {
                 em.close();
