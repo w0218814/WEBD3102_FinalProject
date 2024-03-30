@@ -18,33 +18,34 @@ public class CategoryServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-            if ("delete".equals(request.getParameter("action"))) {
+            String action = request.getParameter("action");
+            if ("delete".equals(action)) {
                 int categoryId = Integer.parseInt(request.getParameter("id"));
                 em.getTransaction().begin();
                 Category category = em.find(Category.class, categoryId);
+                Long transactionsCount = 0L; // Declare outside of the if block
+                Long budgetsCount = 0L; // Declare outside of the if block
                 if (category != null) {
-                    Long transactionsCount = em.createQuery(
-                                    "SELECT COUNT(t.id) FROM Transaction t WHERE t.category.id = :categoryId", Long.class)
+                    // Checking for dependencies before attempting to delete
+                    transactionsCount = em.createQuery("SELECT COUNT(t.id) FROM Transaction t WHERE t.category.id = :categoryId", Long.class)
                             .setParameter("categoryId", categoryId)
                             .getSingleResult();
-
-                    // Assumption: You have a Budget entity that matches your Budget table.
-                    Long budgetsCount = em.createQuery(
-                                    "SELECT COUNT(b.id) FROM Budget b WHERE b.category.id = :categoryId", Long.class)
+                    budgetsCount = em.createQuery("SELECT COUNT(b.id) FROM Budget b WHERE b.category.id = :categoryId", Long.class)
                             .setParameter("categoryId", categoryId)
                             .getSingleResult();
-
                     if (transactionsCount == 0 && budgetsCount == 0) {
                         em.remove(category);
                         em.getTransaction().commit();
                         request.setAttribute("successMessage", "Category deleted successfully.");
                     } else {
+                        em.getTransaction().rollback();
                         request.setAttribute("errorMessage", "Category is in use and cannot be deleted.");
                     }
                 } else {
                     request.setAttribute("errorMessage", "Category not found.");
                 }
-                response.sendRedirect("categories");
+                // Redirecting or forwarding based on the operation result
+                response.sendRedirect("categories?success=" + (category != null && transactionsCount == 0 && budgetsCount == 0));
                 return;
             }
 
@@ -58,16 +59,20 @@ public class CategoryServlet extends HttpServlet {
         }
     }
 
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-            em.getTransaction().begin();
             String categoryName = request.getParameter("name");
             if (categoryName == null || categoryName.trim().isEmpty()) {
-                throw new ServletException("Category name cannot be null or empty.");
+                request.setAttribute("errorMessage", "Category name cannot be null or empty.");
+                // Redirecting back to doGet to reuse the category listing logic
+                doGet(request, response);
+                return;
             }
 
+            em.getTransaction().begin();
             Category category = new Category();
             category.setName(categoryName);
             em.persist(category);
@@ -78,7 +83,8 @@ public class CategoryServlet extends HttpServlet {
             if (em != null && em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            throw new ServletException("Error processing request", e);
+            request.setAttribute("errorMessage", "Error processing request: " + e.getMessage());
+            doGet(request, response);
         } finally {
             if (em != null) {
                 em.close();
