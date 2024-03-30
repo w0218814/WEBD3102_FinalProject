@@ -121,7 +121,15 @@
             <tr>
                 <td><%= transaction.getTransactionDate().toString() %></td>
                 <td><%= transaction.getDescription() %></td>
-                <td><%= transaction.getCategory().getName() %></td>
+                <td><%
+                    // Modification: Check if category is null before accessing its name
+                    Category category = transaction.getCategory();
+                    if (category != null) {
+                        out.print(category.getName());
+                    } else {
+                        out.print("No Category");
+                    }
+                %></td>
                 <td>$<%= transaction.getAmount().toString() %></td>
                 <td>
                     <button class="btn btn-danger btn-sm delete-transaction" data-id="<%= transaction.getId() %>">Delete</button>

@@ -56,17 +56,19 @@ public class TagServlet extends HttpServlet {
                 int tagId = Integer.parseInt(request.getParameter("id"));
                 em.getTransaction().begin();
                 Tag tag = em.find(Tag.class, tagId);
+                if (tag != null) {
+                    Long transactionTagsCount = em.createQuery(
+                                    "SELECT COUNT(trans.id) FROM Tag t JOIN t.transactions trans WHERE t.id = :tagId", Long.class)
+                            .setParameter("tagId", tagId)
+                            .getSingleResult();
 
-                Long transactionCount = em.createQuery(
-                                "SELECT COUNT(tt.transaction.id) FROM Transaction_Tags tt WHERE tt.tag.id = :tagId", Long.class)
-                        .setParameter("tagId", tagId)
-                        .getSingleResult();
-
-                if (transactionCount > 0) {
-                    request.setAttribute("errorMessage", "Tag is in use and cannot be deleted.");
-                } else if (tag != null) {
-                    em.remove(tag);
-                    em.getTransaction().commit();
+                    if (transactionTagsCount == 0) {
+                        em.remove(tag);
+                        em.getTransaction().commit();
+                        request.setAttribute("successMessage", "Tag deleted successfully.");
+                    } else {
+                        request.setAttribute("errorMessage", "Tag is in use and cannot be deleted.");
+                    }
                 } else {
                     request.setAttribute("errorMessage", "Tag not found.");
                 }

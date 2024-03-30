@@ -22,17 +22,25 @@ public class CategoryServlet extends HttpServlet {
                 int categoryId = Integer.parseInt(request.getParameter("id"));
                 em.getTransaction().begin();
                 Category category = em.find(Category.class, categoryId);
+                if (category != null) {
+                    Long transactionsCount = em.createQuery(
+                                    "SELECT COUNT(t.id) FROM Transaction t WHERE t.category.id = :categoryId", Long.class)
+                            .setParameter("categoryId", categoryId)
+                            .getSingleResult();
 
-                Long transactionCount = em.createQuery(
-                                "SELECT COUNT(t.id) FROM TransactionsTable t WHERE t.category.id = :categoryId", Long.class)
-                        .setParameter("categoryId", categoryId)
-                        .getSingleResult();
+                    // Assumption: You have a Budget entity that matches your Budget table.
+                    Long budgetsCount = em.createQuery(
+                                    "SELECT COUNT(b.id) FROM Budget b WHERE b.category.id = :categoryId", Long.class)
+                            .setParameter("categoryId", categoryId)
+                            .getSingleResult();
 
-                if (transactionCount > 0) {
-                    request.setAttribute("errorMessage", "Category is in use and cannot be deleted.");
-                } else if (category != null) {
-                    em.remove(category);
-                    em.getTransaction().commit();
+                    if (transactionsCount == 0 && budgetsCount == 0) {
+                        em.remove(category);
+                        em.getTransaction().commit();
+                        request.setAttribute("successMessage", "Category deleted successfully.");
+                    } else {
+                        request.setAttribute("errorMessage", "Category is in use and cannot be deleted.");
+                    }
                 } else {
                     request.setAttribute("errorMessage", "Category not found.");
                 }
@@ -65,7 +73,7 @@ public class CategoryServlet extends HttpServlet {
             em.persist(category);
             em.getTransaction().commit();
 
-            response.sendRedirect("categories"); // Redirect to refresh the page
+            response.sendRedirect("categories");
         } catch (Exception e) {
             if (em != null && em.getTransaction().isActive()) {
                 em.getTransaction().rollback();

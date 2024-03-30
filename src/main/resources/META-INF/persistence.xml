@@ -9,8 +9,8 @@
         <class>com.personalfinanceapp.model.personalfinanceapp.Transaction</class>
         <class>com.personalfinanceapp.model.personalfinanceapp.Category</class>
         <class>com.personalfinanceapp.model.personalfinanceapp.Tag</class>
-        <class>com.personalfinanceapp.model.personalfinanceapp.Budget</class>
         <class>com.personalfinanceapp.model.personalfinanceapp.Investment</class>
+        <class>com.personalfinanceapp.model.personalfinanceapp.Budget</class>
 
         <properties>
             <!-- Updated properties -->
