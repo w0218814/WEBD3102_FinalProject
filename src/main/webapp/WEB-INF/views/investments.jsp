@@ -19,9 +19,13 @@
                     url: "${pageContext.request.contextPath}/investments",
                     data: formData,
                     success: function(response) {
-                        // Updated to append as a div instead of an <a> tag.
-                        $('#investmentList').append('<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">' + response.amount + ' - ' + response.type + ' - ' + response.date + '</div>');
-                        $('#addInvestmentForm').find('input').val('');
+                        if(response.error) {
+                            alert(response.error); // Handling error response
+                        } else {
+                            // Assuming response contains formatted date
+                            $('#investmentList').append('<div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">' + response.amount + ' - ' + response.type + ' - ' + response.date + '</div>');
+                            $('#addInvestmentForm').find('input[type=text], input[type=number], input[type=date]').val('');
+                        }
                     },
                     error: function() {
                         alert('Error adding investment.');
@@ -60,7 +64,6 @@
             List<Investment> investments = (List<Investment>) request.getAttribute("investments");
             for (Investment investment : investments) {
         %>
-        <!-- Updated to use div instead of an <a> tag -->
         <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
             <%= investment.getAmount() %> - <%= investment.getType() %> - <%= investment.getInvestmentDate().format(formatter) %>
         </div>

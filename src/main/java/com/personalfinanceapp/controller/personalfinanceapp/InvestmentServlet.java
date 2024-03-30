@@ -47,8 +47,12 @@ public class InvestmentServlet extends HttpServlet {
             em.persist(investment);
             em.getTransaction().commit();
 
+            // Added detailed information for successful addition.
             jsonResponse.put("message", "Investment added successfully");
             jsonResponse.put("id", investment.getId());
+            jsonResponse.put("amount", investment.getAmount().toString());
+            jsonResponse.put("type", investment.getType());
+            jsonResponse.put("date", investment.getInvestmentDate().toString());
             response.getWriter().write(jsonResponse.toString());
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {

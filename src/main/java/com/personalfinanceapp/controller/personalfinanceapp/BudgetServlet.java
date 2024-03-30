@@ -17,8 +17,14 @@ public class BudgetServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
         try {
-            List<Budget> budgets = em.createQuery("SELECT b FROM Budget b JOIN FETCH b.category", Budget.class).getResultList();
+            // Fetch budgets
+            List<Budget> budgets = em.createQuery("SELECT b FROM Budget b", Budget.class).getResultList();
             request.setAttribute("budgets", budgets);
+
+            // Fetch categories for dropdown
+            List<Category> categories = em.createQuery("SELECT c FROM Category c", Category.class).getResultList();
+            request.setAttribute("categories", categories);
+
             request.getRequestDispatcher("/WEB-INF/views/budgets.jsp").forward(request, response);
         } finally {
             if (em != null) {
@@ -26,6 +32,7 @@ public class BudgetServlet extends HttpServlet {
             }
         }
     }
+
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
@@ -49,8 +56,29 @@ public class BudgetServlet extends HttpServlet {
     }
 
     private void saveOrUpdateBudget(HttpServletRequest request, EntityManager em) {
-        em.getTransaction().begin();
-        // Implementation of saving or updating a budget
-        em.getTransaction().commit();
+        try {
+            em.getTransaction().begin();
+
+            Integer categoryId = Integer.parseInt(request.getParameter("category"));
+            Double amount = Double.parseDouble(request.getParameter("amount"));
+            String period = request.getParameter("period");
+
+            Category category = em.find(Category.class, categoryId);
+            Budget budget = new Budget();
+            budget.setAmount(amount);
+            budget.setPeriod(period);
+            budget.setCategory(category);
+
+            em.persist(budget);
+            em.getTransaction().commit();
+
+            // Add some form of success indicator, like setting a request attribute or session attribute
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace(); // Properly log the exception
+            // Add some form of error handling, like setting a request attribute or session attribute
+        }
     }
 }
