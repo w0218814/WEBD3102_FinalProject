@@ -27,6 +27,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav ml-auto"> <!-- ml-auto to align nav items to the right -->
+                <a class="nav-item nav-link" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
                 <a class="nav-item nav-link" href="${pageContext.request.contextPath}/transactions">Transactions</a>
                 <a class="nav-item nav-link" href="${pageContext.request.contextPath}/categories">Categories</a>
                 <a class="nav-item nav-link" href="${pageContext.request.contextPath}/tags">Tags</a>
@@ -36,5 +37,9 @@
         </div>
     </div>
 </nav>
+<!-- Ensure to include Bootstrap's JS and Popper.js for the collapsing functionality to work -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>

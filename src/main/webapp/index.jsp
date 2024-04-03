@@ -53,6 +53,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav ml-auto">
+                <a class="nav-item nav-link" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
                 <a class="nav-item nav-link" href="${pageContext.request.contextPath}/transactions">Transactions</a>
                 <a class="nav-item nav-link" href="${pageContext.request.contextPath}/categories">Categories</a>
                 <a class="nav-item nav-link" href="${pageContext.request.contextPath}/tags">Tags</a>
